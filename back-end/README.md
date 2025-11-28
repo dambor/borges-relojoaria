@@ -34,10 +34,13 @@ This is the backend for the Borges Relojoaria application, built with FastAPI an
 -   `GET /`: Health check.
 -   `POST /analyze`: Upload an image for AI analysis.
 -   `POST /analyze-base64`: Send a base64 image string for AI analysis.
--   `GET /repairs`: List all repairs.
+-   `GET /repairs`: List repairs. Supports `user_phone` query param to filter by user (or show all for Admin).
 -   `POST /repairs`: Create a new repair.
 -   `GET /repairs/{id}`: Get a specific repair.
 -   `PUT /repairs/{id}`: Update a repair.
+-   `GET /users/{phone}`: Get user details by phone.
+-   `POST /users`: Register a new user.
+-   `GET /admin-phone`: Get the phone number of the first Admin user.
 
 ## Testing
 
