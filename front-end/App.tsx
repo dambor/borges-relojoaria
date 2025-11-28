@@ -13,6 +13,7 @@ const App: React.FC = () => {
 
   // Login State
   const [loginStep, setLoginStep] = useState<'PHONE' | 'NAME'>('PHONE');
+  const [countryCode, setCountryCode] = useState('+55');
   const [phone, setPhone] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [user, setUser] = useState<any>(null); // Store full user object
@@ -60,16 +61,17 @@ const App: React.FC = () => {
     if (loginStep === 'PHONE') {
       // 1. Sanitize Phone
       const cleanPhone = phone.replace(/\D/g, '');
+      const fullPhone = `${countryCode.replace('+', '')}${cleanPhone}`;
 
-      // 2. Validate DDD + Number (10 or 11 digits)
-      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-        setLoginError('Digite o número com DDD (Ex: 11999999999)');
+      // 2. Validate Number (check if it has reasonable length, e.g. > 8 digits)
+      if (cleanPhone.length < 8) {
+        setLoginError('Número de telefone inválido');
         return;
       }
 
       // 3. Check if user exists via API
       try {
-        const user = await api.getUser(cleanPhone);
+        const user = await api.getUser(fullPhone);
         if (user) {
           // Existing User -> Login directly
           setCustomerName(user.name);
@@ -93,7 +95,8 @@ const App: React.FC = () => {
       // Register New User -> Login
       try {
         const cleanPhone = phone.replace(/\D/g, '');
-        const newUser = await api.createUser({ phone: cleanPhone, name: customerName, role: 'CUSTOMER' });
+        const fullPhone = `${countryCode.replace('+', '')}${cleanPhone}`;
+        const newUser = await api.createUser({ phone: fullPhone, name: customerName, role: 'CUSTOMER' });
         setUser(newUser);
         setView('HOME');
         setRepairs([]);
@@ -219,6 +222,28 @@ const App: React.FC = () => {
               </button>
             )}
 
+            {/* Country Code Selector - Only show in PHONE step */}
+            {loginStep === 'PHONE' && (
+              <div className="absolute left-2 z-20">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="bg-transparent text-[#1f2937] font-bold text-sm focus:outline-none cursor-pointer py-2 pl-1 pr-1 appearance-none text-center"
+                  style={{ textAlignLast: 'center' }}
+                >
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+351">🇵🇹 +351</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+39">🇮🇹 +39</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+81">🇯🇵 +81</option>
+                </select>
+              </div>
+            )}
+
             <input
               type={loginStep === 'PHONE' ? "tel" : "text"}
               value={loginStep === 'PHONE' ? phone : customerName}
@@ -227,9 +252,9 @@ const App: React.FC = () => {
                 if (loginStep === 'PHONE') setPhone(e.target.value);
                 else setCustomerName(e.target.value);
               }}
-              placeholder={loginStep === 'PHONE' ? "DDD + Número..." : "Como podemos te chamar?"}
+              placeholder={loginStep === 'PHONE' ? "(DDD) 99999-9999" : "Como podemos te chamar?"}
               autoFocus={loginStep === 'NAME'}
-              className={`w-full bg-white text-[#1f2937] placeholder-gray-400 border ${loginError ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-full py-4 ${loginStep === 'NAME' ? 'pl-10' : 'pl-6'} pr-14 text-center text-lg font-serif focus:outline-none focus:border-[#1f2937] focus:ring-1 focus:ring-[#1f2937] transition-all`}
+              className={`w-full bg-white text-[#1f2937] placeholder-gray-400 border ${loginError ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-full py-4 ${loginStep === 'NAME' ? 'pl-10' : 'pl-20'} pr-14 text-left text-lg font-serif focus:outline-none focus:border-[#1f2937] focus:ring-1 focus:ring-[#1f2937] transition-all`}
             />
 
             <button
