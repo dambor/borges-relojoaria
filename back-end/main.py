@@ -22,19 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve Static Files (Frontend)
-# Ensure the 'static' directory exists (it will in the container)
-if os.path.exists("static"):
-    app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
-    # We might need to mount other static folders if they exist, or just root
-    # But mounting root "/" as StaticFiles interferes with API routes.
-    # So we serve specific assets and then a catch-all for index.html
-
 @app.get("/")
-async def read_root():
-    # If static/index.html exists, serve it. Otherwise return API status.
-    if os.path.exists("static/index.html"):
-        return FileResponse("static/index.html")
+def read_root():
     return {"message": "Borges Relojoaria API is running"}
 
 # API Endpoints (Keep existing ones)
@@ -113,8 +102,45 @@ def get_repairs(user_phone: Optional[str] = None):
 def create_repair(repair: RepairItem):
     """
     Creates a new repair in Supabase.
+    Handles Base64 image upload to Supabase Storage.
     """
     try:
+        # Handle Image Upload
+        if repair.imageUrl and repair.imageUrl.startswith("data:image"):
+            try:
+                import base64
+                import uuid
+                
+                # 1. Parse Base64
+                header, encoded = repair.imageUrl.split(",", 1)
+                file_ext = header.split(";")[0].split("/")[1]
+                image_data = base64.b64decode(encoded)
+                
+                # 2. Generate Filename
+                filename = f"{uuid.uuid4()}.{file_ext}"
+                
+                # 3. Upload to Supabase Storage
+                # Ensure 'repairs' bucket exists and is public
+                bucket_name = "repairs"
+                supabase.storage.from_(bucket_name).upload(
+                    path=filename,
+                    file=image_data,
+                    file_options={"content-type": f"image/{file_ext}"}
+                )
+                
+                # 4. Get Public URL
+                public_url = supabase.storage.from_(bucket_name).get_public_url(filename)
+                
+                # 5. Update repair object with URL
+                repair.imageUrl = public_url
+                
+            except Exception as e:
+                print(f"Image upload failed: {e}")
+                # Fallback: keep the base64 string or fail? 
+                # Let's log and proceed (or fail if critical). 
+                # For now, we proceed, but it might fail DB insert if too large.
+                pass
+
         # Exclude id if it's None so Supabase generates it (if configured)
         # Or if we are generating it on frontend, we keep it.
         # The frontend generates a timestamp ID, which is fine for now.
@@ -125,7 +151,7 @@ def create_repair(repair: RepairItem):
             return response.data[0]
         raise HTTPException(status_code=500, detail="Failed to create repair")
     except Exception as e:
-        print(f"Error in get_repairs: {e}")
+        print(f"Error in create_repair: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/repairs/{repair_id}", response_model=RepairItem)
@@ -204,9 +230,4 @@ def get_admin_phone():
         print(f"Error in get_admin_phone: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Catch-all for SPA (Must be last)
-@app.get("/{full_path:path}")
-async def catch_all(full_path: str):
-    if os.path.exists("static/index.html"):
-        return FileResponse("static/index.html")
-    raise HTTPException(status_code=404, detail="Not Found")
+# API Endpoints (Keep existing ones)

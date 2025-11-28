@@ -1,12 +1,3 @@
-# Build Frontend
-FROM node:20-alpine as build
-WORKDIR /app/frontend
-COPY front-end/package*.json ./
-RUN npm ci
-COPY front-end/ ./
-RUN npm run build
-
-# Build Backend
 FROM python:3.11-slim
 WORKDIR /app
 
@@ -21,10 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY back-end/ ./
-
-# Copy built frontend assets from build stage
-# We copy them to a 'static' directory in the container
-COPY --from=build /app/frontend/dist ./static
 
 # Set environment variables
 ENV PORT=8080

@@ -6,7 +6,9 @@ export interface User {
     role: 'CUSTOMER' | 'ADMIN';
 }
 
-const API_URL = import.meta.env.PROD ? '' : 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.PROD
+    ? 'https://borges-relojoaria-728960761149.us-central1.run.app'
+    : 'http://127.0.0.1:8000';
 
 export const api = {
     async getUser(phone: string): Promise<User | null> {
