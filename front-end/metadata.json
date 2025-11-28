@@ -1,0 +1,7 @@
+{
+  "name": "Relojoaria Borges",
+  "description": "Aplicativo de gestão de concertos de relógios com análise de IA.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
