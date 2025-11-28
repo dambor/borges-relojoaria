@@ -28,8 +28,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                 </span>
 
                 <h1 className="font-serif text-5xl md:text-6xl text-[#1f2937] font-bold leading-tight mb-6">
-                    Renove seu <br />
-                    <span className="italic text-gray-500">Relógio</span> com IA
+                    Relojoaria <br />
+                    Borges
                 </h1>
 
                 <p className="text-gray-600 text-lg leading-relaxed max-w-md mb-10 font-light">
