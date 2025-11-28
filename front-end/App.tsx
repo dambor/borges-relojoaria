@@ -2,13 +2,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Logo } from './components/Logo';
 import { BottomNav } from './components/BottomNav';
+import { LandingPage } from './components/LandingPage';
 import { api } from './services/api';
 import { ViewState, RepairItem } from './types';
 
 // Mock Data for Login (removed)
 
 const App: React.FC = () => {
-  const [view, setView] = useState<ViewState>('LOGIN');
+  const [view, setView] = useState<ViewState>('LANDING');
 
   // Login State
   const [loginStep, setLoginStep] = useState<'PHONE' | 'NAME'>('PHONE');
@@ -613,9 +614,10 @@ const App: React.FC = () => {
 
   return (
     <>
+      {view === 'LANDING' && <LandingPage onStart={() => setView('LOGIN')} />}
       {view === 'LOGIN' && renderLogin()}
 
-      {view !== 'LOGIN' && (
+      {view !== 'LOGIN' && view !== 'LANDING' && (
         <>
           {/* Router Logic for Views */}
           {view === 'HOME' && (user?.role === 'ADMIN' ? renderAdminDashboard() : renderHome())}

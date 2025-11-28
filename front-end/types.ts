@@ -16,4 +16,4 @@ export interface RepairItem {
   analysis?: WatchAnalysis;
 }
 
-export type ViewState = 'LOGIN' | 'HOME' | 'ADD_REPAIR' | 'PROFILE' | 'REPAIR_DETAILS';
+export type ViewState = 'LANDING' | 'LOGIN' | 'HOME' | 'ADD_REPAIR' | 'PROFILE' | 'REPAIR_DETAILS';
